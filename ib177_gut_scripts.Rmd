@@ -9,26 +9,39 @@ output: html_document
 library(tidyverse)
 library(ggplot2)
 library(readxl)
+library(broom)
+
 ```
 ```{r}
 mtdt<- read_csv("/Users/zehuazhou/Desktop/ib177/ib177_meta_data.csv") %>% 
   filter(measured == "yes") %>%
   filter(generation != "none") %>%
   mutate(num_gen = as.numeric(gsub("[^0-9]", "", generation))) %>%
-  mutate(type=as.factor(type)) %>% 
-  mutate(num_gen=as.factor(num_gen)) %>% 
-  mutate(condition=as.factor(condition))
+  mutate(type=as.factor(type)) %>%
+  mutate(num_gen=as.factor(num_gen)) %>%
+  mutate(log_SL=log(standard_length)) %>%
+  mutate(log_GL=log(gut_length))
+  #mutate(condition=as.factor(condition))
 
 p1<-ggplot(mtdt, aes(standard_length, gut_length)) + 
   geom_point(aes(x=standard_length,y=gut_length, color = type, size = 5)) + 
-  scale_size(guide="none") + 
-  facet_wrap(~num_gen, ncol=2)
+  scale_size(guide="none") 
 
 p1
 ```
 ```{r}
-gut_length_model<- lm(gut_length~type+standard_length, data=mtdt)
-predicted_length<-predict(gut_length_model, mtdt)
-gut_length_model
+library(readxl)
+anova_1 <- aov(log_GL ~ mtdt$log_SL, data = mtdt)
+summary(anova_1)
+
+gut_length_model<- lm(log_GL~ type + log_SL + num_gen, data=mtdt)
+summary(gut_length_model)
+
 #corr()
+```
+
+```{r}
+
+
+
 ```
